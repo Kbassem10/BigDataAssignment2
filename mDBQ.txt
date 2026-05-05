@@ -1,0 +1,22 @@
+//Indexing Question:
+db.moviesColl.createIndex({ name: 1 });
+db.moviesColl.find({ name: "Ice Airport Alaska" });
+
+//Logical Operations Question:
+db.moviesColl.find({ type: "Movie", $or: [ { genre: /Drama/i }, { genre: /Documentary/i } ] });
+
+//Aggregation Question:
+db.moviesColl.aggregate([ { $group: { _id: "$type", count: { $sum: 1 } } }, { $sort: { count: -1 } } ]);
+
+//Query Question:
+db.moviesColl.find({
+    type: "Movie",
+    released_at: { $gte: "2011-01-01" },
+    streaming_on: /Prime Video|Netflix/i,
+    imdb_rating: { $ne: "" }
+}, {
+    _id: 0, name: 1, released_at: 1, genre: 1, streaming_on: 1, country: 1, imdb_rating: 1
+}).sort({ imdb_rating: -1 }).limit(5);
+
+//Bonus: Uses the distinct() method to retrieve an array of unique countries in the dataset
+db.moviesColl.distinct("country");
