@@ -97,3 +97,103 @@ Once the MapReduce job completes, retrieve the output statistics from HDFS:
 hdfs dfs -cat /output/part-r-00000
 ```
 *(The final output file `part-r-00000` is also included in the root of this submission zip).*
+
+
+# Hadoop MapReduce Workflow
+
+## 1. Start the Cluster
+
+```bash
+docker-compose up -d
+```
+
+---
+
+## 2. Copy Files into the Namenode Container
+
+```bash
+docker cp mds.csv namenode:/tmp/
+docker cp ARDriver.java namenode:/tmp/
+```
+
+---
+
+## 3. Open the Namenode Container
+
+```bash
+docker exec -it namenode /bin/bash
+```
+
+---
+
+# HDFS Setup
+
+## Create Input Directory
+
+```bash
+hdfs dfs -mkdir -p /input
+```
+
+## Upload Dataset to HDFS
+
+```bash
+hdfs dfs -put /tmp/mds.csv /input/
+```
+
+---
+
+# Compile and Run
+
+## Set Hadoop Classpath
+
+```bash
+export HADOOP_CLASSPATH=$(hadoop classpath)
+```
+
+## Compile Java File
+
+```bash
+javac -classpath ${HADOOP_CLASSPATH} -d /tmp/ ARDriver.java
+```
+
+## Create JAR File
+
+```bash
+jar -cvf /tmp/ardriver.jar -C /tmp/ .
+```
+
+## Run MapReduce Job
+
+```bash
+hadoop jar /tmp/ardriver.jar ARDriver /input/mds.csv /output
+```
+
+---
+
+# Export Results
+
+## Merge Output Files
+
+```bash
+hdfs dfs -getmerge /output /tmp/final_results.txt
+```
+
+## Exit Container
+
+```bash
+exit
+```
+
+## Copy Results to Local Machine
+
+```bash
+docker cp namenode:/tmp/final_results.txt .
+```
+
+---
+
+# Final Output
+
+```text
+final_results.txt
+```
